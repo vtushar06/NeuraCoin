@@ -6,6 +6,7 @@ import {
   ScrollView,
   RefreshControl,
   Pressable,
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -13,14 +14,25 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { Colors, Gradients } from "@/constants/Colors";
 import { useAuthStore } from "@/lib/store/auth";
-import { useCryptoStore } from "@/lib/store/crypto";
+import {
+  useCryptoStore,
+  startAutoRefresh,
+  stopAutoRefresh,
+} from "@/lib/store/crypto";
 import { formatCurrency, formatPercent } from "@/lib/utils/format";
 import CryptoCard from "@/components/features/CryptoCard";
 import QuickActions from "@/components/features/QuickActions";
 
 export default function HomeScreen() {
   const { user } = useAuthStore();
-  const { topCryptos, fetchTopCryptos, isLoading } = useCryptoStore();
+  const {
+    topCryptos,
+    fetchTopCryptos,
+    isLoading,
+    error,
+    lastUpdated,
+    clearError,
+  } = useCryptoStore();
   const [refreshing, setRefreshing] = useState(false);
 
   const onRefresh = async () => {
@@ -30,8 +42,36 @@ export default function HomeScreen() {
   };
 
   useEffect(() => {
+    // Initial data fetch
     fetchTopCryptos();
+
+    // Start auto-refresh every 5 minutes
+    startAutoRefresh(5);
+
+    // Cleanup on unmount
+    return () => {
+      stopAutoRefresh();
+    };
   }, []);
+
+  // Calculate portfolio value from top cryptos (simulated)
+  const simulatePortfolioValue = () => {
+    if (topCryptos.length === 0) return 25847.92;
+
+    // Simulate holdings: 0.5 BTC, 5 ETH, 100 BNB
+    const btc = topCryptos.find((c) => c.symbol === "btc");
+    const eth = topCryptos.find((c) => c.symbol === "eth");
+    const bnb = topCryptos.find((c) => c.symbol === "bnb");
+
+    let total = 0;
+    if (btc) total += btc.current_price * 0.5;
+    if (eth) total += eth.current_price * 5;
+    if (bnb) total += bnb.current_price * 100;
+
+    return total || 25847.92;
+  };
+
+  const portfolioValue = simulatePortfolioValue();
 
   return (
     <SafeAreaView style={styles.container}>
@@ -47,14 +87,31 @@ export default function HomeScreen() {
             <Text style={styles.greeting}>Hello, {user?.firstName}! 👋</Text>
             <Text style={styles.subtitle}>Welcome back to NeuraCoin</Text>
           </View>
-          <Pressable style={styles.notificationButton}>
-            <Ionicons
-              name="notifications-outline"
-              size={24}
-              color={Colors.text}
-            />
-          </Pressable>
+          <View style={styles.headerRight}>
+            <Pressable style={styles.notificationButton}>
+              <Ionicons
+                name="notifications-outline"
+                size={24}
+                color={Colors.text}
+              />
+            </Pressable>
+            {lastUpdated && (
+              <Text style={styles.lastUpdate}>
+                Updated: {lastUpdated.toLocaleTimeString()}
+              </Text>
+            )}
+          </View>
         </View>
+
+        {/* Error Banner */}
+        {error && (
+          <View style={styles.errorBanner}>
+            <Text style={styles.errorText}>⚠️ {error}</Text>
+            <Pressable onPress={clearError} style={styles.errorClose}>
+              <Ionicons name="close" size={16} color={Colors.error} />
+            </Pressable>
+          </View>
+        )}
 
         {/* Portfolio Summary */}
         <View>
@@ -66,7 +123,7 @@ export default function HomeScreen() {
           >
             <Text style={styles.portfolioLabel}>Total Portfolio Value</Text>
             <Text style={styles.portfolioValue}>
-              {formatCurrency(25847.92)}
+              {formatCurrency(portfolioValue)}
             </Text>
             <View style={styles.portfolioGain}>
               <Ionicons name="trending-up" size={16} color={Colors.success} />
@@ -95,19 +152,26 @@ export default function HomeScreen() {
             </Pressable>
           </View>
 
-          <View style={styles.cryptoList}>
-            {topCryptos.slice(0, 5).map((crypto, index) => (
-              <CryptoCard
-                key={crypto.id}
-                crypto={crypto}
-                delay={index * 100}
-                onPress={() => {
-                  // Navigate to crypto details
-                  console.log("Navigate to", crypto.symbol);
-                }}
-              />
-            ))}
-          </View>
+          {isLoading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color={Colors.primary} />
+              <Text style={styles.loadingText}>Loading market data...</Text>
+            </View>
+          ) : (
+            <View style={styles.cryptoList}>
+              {topCryptos.slice(0, 10).map((crypto, index) => (
+                <CryptoCard
+                  key={crypto.id}
+                  crypto={crypto}
+                  delay={index * 100}
+                  onPress={() => {
+                    console.log("Navigate to", crypto.symbol);
+                    // TODO: Navigate to crypto details page
+                  }}
+                />
+              ))}
+            </View>
+          )}
         </View>
 
         {/* Recent Activity */}
@@ -148,6 +212,7 @@ export default function HomeScreen() {
   );
 }
 
+// Activity item component (same as before)
 function ActivityItem({
   type,
   crypto,
@@ -202,8 +267,11 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
+    alignItems: "flex-start",
     padding: 24,
+  },
+  headerRight: {
+    alignItems: "flex-end",
   },
   greeting: {
     fontSize: 24,
@@ -215,6 +283,11 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     marginTop: 4,
   },
+  lastUpdate: {
+    fontSize: 10,
+    color: Colors.textSecondary,
+    marginTop: 4,
+  },
   notificationButton: {
     width: 44,
     height: 44,
@@ -222,6 +295,26 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.card,
     justifyContent: "center",
     alignItems: "center",
+  },
+  errorBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: Colors.error + "20",
+    padding: 12,
+    marginHorizontal: 24,
+    marginBottom: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: Colors.error + "30",
+  },
+  errorText: {
+    color: Colors.error,
+    fontSize: 14,
+    flex: 1,
+  },
+  errorClose: {
+    padding: 4,
   },
   portfolioCard: {
     margin: 24,
@@ -280,6 +373,15 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: Colors.primary,
     fontWeight: "600",
+  },
+  loadingContainer: {
+    alignItems: "center",
+    padding: 40,
+  },
+  loadingText: {
+    color: Colors.textSecondary,
+    marginTop: 12,
+    fontSize: 14,
   },
   cryptoList: {
     gap: 12,
