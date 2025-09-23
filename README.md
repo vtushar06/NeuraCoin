@@ -7,6 +7,7 @@ NeuraCoin is a modern, cross-platform fintech application built with React Nativ
 ![Expo](https://img.shields.io/badge/Expo-54.0-000020)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.1-3178C6)
 
+
 ## ✨ Features
 
 ### 🔐 **Authentication System**
@@ -41,6 +42,27 @@ NeuraCoin is a modern, cross-platform fintech application built with React Nativ
 - Toast notifications
 - Pull-to-refresh functionality
 - Offline-first architecture
+
+## 🔮 Roadmap
+
+### Phase 1 (Current)
+- ✅ Authentication system
+- ✅ Basic navigation
+- ✅ Market data display
+- ✅ Portfolio overview
+
+### Phase 2 (Coming Soon)
+- 🔄 Real trading functionality
+- 🔄 Advanced charts and analytics
+- 🔄 Push notifications
+- 🔄 Biometric authentication
+- 🔄 Social features
+
+### Phase 3 (Future)
+- 📋 DeFi integration
+- 📋 NFT marketplace
+- 📋 Advanced trading tools
+- 📋 Multi-wallet support
 
 ## 🚀 Quick Start
 
