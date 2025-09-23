@@ -8,19 +8,27 @@ import type { CryptoData } from "@/lib/store/crypto";
 interface CryptoCardProps {
   crypto: CryptoData;
   onPress: () => void;
-  delay?: number; // Keep this for future use, but won't use it now
+  delay?: number;
+  isSelected?: boolean; // Add this prop
 }
 
 export default function CryptoCard({
   crypto,
   onPress,
   delay = 0,
+  isSelected = false, // Add default value
 }: CryptoCardProps) {
   const isPositive = crypto.price_change_percentage_24h >= 0;
 
   return (
     <View>
-      <Pressable style={styles.container} onPress={onPress}>
+      <Pressable
+        style={[
+          styles.container,
+          isSelected && styles.selectedContainer, // Add selected style
+        ]}
+        onPress={onPress}
+      >
         <View style={styles.leftSection}>
           <Image
             source={{ uri: crypto.image }}
@@ -32,15 +40,21 @@ export default function CryptoCard({
             }}
           />
           <View style={styles.cryptoInfo}>
-            <Text style={styles.cryptoName}>{crypto.name}</Text>
-            <Text style={styles.cryptoSymbol}>
+            <Text
+              style={[styles.cryptoName, isSelected && styles.selectedText]}
+            >
+              {crypto.name}
+            </Text>
+            <Text
+              style={[styles.cryptoSymbol, isSelected && styles.selectedSymbol]}
+            >
               {crypto.symbol.toUpperCase()}
             </Text>
           </View>
         </View>
 
         <View style={styles.rightSection}>
-          <Text style={styles.price}>
+          <Text style={[styles.price, isSelected && styles.selectedText]}>
             {formatCurrency(crypto.current_price)}
           </Text>
           <View style={styles.changeContainer}>
@@ -59,6 +73,17 @@ export default function CryptoCard({
             </Text>
           </View>
         </View>
+
+        {/* Selection indicator */}
+        {isSelected && (
+          <View style={styles.selectionIndicator}>
+            <Ionicons
+              name="checkmark-circle"
+              size={20}
+              color={Colors.primary}
+            />
+          </View>
+        )}
       </Pressable>
     </View>
   );
@@ -73,6 +98,13 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.card,
     borderRadius: 12,
     marginBottom: 8,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  selectedContainer: {
+    borderColor: Colors.primary,
+    borderWidth: 2,
+    backgroundColor: Colors.primary + "10", // Slight tint
   },
   leftSection: {
     flexDirection: "row",
@@ -93,10 +125,16 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: Colors.text,
   },
+  selectedText: {
+    color: Colors.primary,
+  },
   cryptoSymbol: {
     fontSize: 12,
     color: Colors.textSecondary,
     marginTop: 2,
+  },
+  selectedSymbol: {
+    color: Colors.primary + "80",
   },
   rightSection: {
     alignItems: "flex-end",
@@ -115,5 +153,10 @@ const styles = StyleSheet.create({
   change: {
     fontSize: 12,
     fontWeight: "500",
+  },
+  selectionIndicator: {
+    position: "absolute",
+    top: 8,
+    right: 8,
   },
 });
