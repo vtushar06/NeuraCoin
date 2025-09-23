@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import * as Crypto from "expo-crypto";
 import { asyncDB, type User } from "@/lib/database/async-storage-db";
-import { secureStorage } from "@/lib/storage/storage";
+import { secureStorage, storage } from "@/lib/storage/storage";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 interface AuthState {
@@ -17,6 +17,7 @@ interface AuthState {
   ) => Promise<void>;
   signOut: () => Promise<void>;
   updateProfile: (userData: Partial<User>) => Promise<void>;
+  clearAllData: () => Promise<void>; // Add this for debugging
 }
 
 const STORAGE_KEYS = {
@@ -28,6 +29,22 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   isAuthenticated: false,
   isLoading: true,
+
+  // Add this method for debugging
+  clearAllData: async () => {
+    try {
+      await AsyncStorage.clear();
+      await secureStorage.clear();
+      set({
+        user: null,
+        isAuthenticated: false,
+        isLoading: false,
+      });
+      console.log("All data cleared successfully");
+    } catch (error) {
+      console.error("Error clearing all ", error);
+    }
+  },
 
   initialize: async () => {
     try {
@@ -64,7 +81,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const user = await asyncDB.findUserByEmail(email);
 
       if (!user) {
-        throw new Error("User not found");
+        throw new Error("User not found. Please register first.");
       }
 
       // Generate auth token
@@ -83,7 +100,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       });
     } catch (error) {
       console.error("Sign in error:", error);
-      throw new Error("Sign in failed");
+      throw new Error(
+        error instanceof Error ? error.message : "Sign in failed"
+      );
     }
   },
 
@@ -96,14 +115,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       // Check if user exists
       const existingUser = await asyncDB.findUserByEmail(email);
       if (existingUser) {
-        throw new Error("User already exists");
+        throw new Error(
+          `User with email ${email} already exists. Please sign in instead.`
+        );
       }
 
       // Create user
       const user = await asyncDB.createUser({
-        email,
-        firstName: userData.firstName,
-        lastName: userData.lastName,
+        email: email.toLowerCase().trim(),
+        firstName: userData.firstName.trim(),
+        lastName: userData.lastName.trim(),
         isVerified: false,
       });
 
@@ -123,7 +144,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       });
     } catch (error) {
       console.error("Sign up error:", error);
-      throw new Error("Sign up failed");
+      throw new Error(
+        error instanceof Error ? error.message : "Sign up failed"
+      );
     }
   },
 
