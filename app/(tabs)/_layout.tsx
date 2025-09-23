@@ -27,19 +27,6 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="portfolio"
-        options={{
-          title: "Portfolio",
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons
-              name={focused ? "pie-chart" : "pie-chart-outline"}
-              size={24}
-              color={color}
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
         name="market"
         options={{
           title: "Market",
@@ -53,12 +40,25 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="transactions"
+        name="news"
         options={{
-          title: "History",
+          title: "News",
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
-              name={focused ? "list" : "list-outline"}
+              name={focused ? "newspaper" : "newspaper-outline"}
+              size={24}
+              color={color}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="portfolio"
+        options={{
+          title: "Portfolio",
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons
+              name={focused ? "pie-chart" : "pie-chart-outline"}
               size={24}
               color={color}
             />
