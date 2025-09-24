@@ -4,13 +4,19 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import { useAuthStore } from "@/lib/store/auth";
 import { useEffect } from "react";
+import LoadingScreen from "@/components/ui/LoadingScreen"; // Add import
 
 export default function RootLayout() {
-  const { initialize } = useAuthStore();
+  const { initialize, isLoading } = useAuthStore();
 
   useEffect(() => {
     initialize();
   }, []);
+
+  // Show loading screen while initializing
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
 
   return (
     <SafeAreaProvider>

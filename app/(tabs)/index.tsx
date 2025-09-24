@@ -7,6 +7,7 @@ import {
   RefreshControl,
   Pressable,
   ActivityIndicator,
+  Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -83,10 +84,21 @@ export default function HomeScreen() {
       >
         {/* Header */}
         <View style={styles.header}>
-          <View>
-            <Text style={styles.greeting}>Hello, {user?.firstName}! 👋</Text>
-            <Text style={styles.subtitle}>Welcome back to NeuraCoin</Text>
+          <View style={styles.headerLeft}>
+            {/* Transparent container for logo */}
+            <View style={styles.logoContainer}>
+              <Image
+                source={require("@/assets/images/logo-icon-2.png")}
+                style={styles.headerLogo}
+                resizeMode="contain"
+              />
+            </View>
+            <View>
+              <Text style={styles.greeting}>Hello, {user?.firstName}! 👋</Text>
+              <Text style={styles.subtitle}>Welcome back to NeuraCoin</Text>
+            </View>
           </View>
+
           <View style={styles.headerRight}>
             <Pressable style={styles.notificationButton}>
               <Ionicons
@@ -263,6 +275,26 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,
+  },
+  headerLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+    gap: 12,
+  },
+  logoContainer: {
+    width: 64,
+    height: 64,
+    backgroundColor: "transparent", // Force transparent background
+    borderRadius: 32, // Circular container
+    overflow: "hidden", // Clip any background artifacts
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  headerLogo: {
+    width: "100%",
+    height: "100%",
+    backgroundColor: "transparent",
   },
   header: {
     flexDirection: "row",

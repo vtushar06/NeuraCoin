@@ -5,6 +5,7 @@ import {
   StyleSheet,
   ImageBackground,
   Pressable,
+  Image, // Add this import
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
@@ -25,6 +26,14 @@ export default function WelcomeScreen() {
       >
         <SafeAreaView style={styles.content}>
           <View style={styles.header}>
+            {/* Add Logo */}
+            <View style={styles.logoContainer}>
+              <Image
+                source={require("@/assets/images/logo-icon-1.png")}
+                style={styles.headerLogo}
+                resizeMode="contain"
+              />
+            </View>
             <Text style={styles.title}>NeuraCoin</Text>
             <Text style={styles.subtitle}>
               Your Gateway to the Future of Finance
@@ -82,6 +91,21 @@ const styles = StyleSheet.create({
   header: {
     alignItems: "center",
     marginTop: 60,
+  },
+  // Add logo styles
+  logoContainer: {
+    width: 156,
+    height: 156,
+    backgroundColor: "transparent", // Force transparent background
+    borderRadius: 32, // Circular container
+    overflow: "hidden", // Clip any background artifacts
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  headerLogo: {
+    width: "100%",
+    height: "100%",
+    backgroundColor: "transparent",
   },
   title: {
     fontSize: 48,
