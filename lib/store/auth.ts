@@ -1,182 +1,203 @@
 import { create } from "zustand";
-import * as Crypto from "expo-crypto";
-import { asyncDB, type User } from "@/lib/database/async-storage-db";
-import { secureStorage, storage } from "@/lib/storage/storage";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { storage } from "@/lib/storage/storage";
+
+export interface User {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  createdAt: Date;
+  isNewUser?: boolean;
+}
+
+interface RegisterData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+}
 
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  error: string | null;
+
+  // Actions
+  register: (data: RegisterData) => Promise<boolean>;
+  signIn: (email: string, password: string) => Promise<boolean>;
+  logout: () => Promise<void>;
   initialize: () => Promise<void>;
-  signIn: (email: string, password: string) => Promise<void>;
-  signUp: (
-    email: string,
-    password: string,
-    userData: { firstName: string; lastName: string }
-  ) => Promise<void>;
-  signOut: () => Promise<void>;
-  updateProfile: (userData: Partial<User>) => Promise<void>;
-  clearAllData: () => Promise<void>; // Add this for debugging
+  clearError: () => void;
+  markUserAsExisting: () => Promise<void>;
 }
 
 const STORAGE_KEYS = {
-  CURRENT_USER_ID: "neuracoin_current_user_id",
-  AUTH_TOKEN: "neuracoin_auth_token",
+  USER: "user_data",
+  AUTH_TOKEN: "auth_token",
 };
 
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   isAuthenticated: false,
-  isLoading: true,
+  isLoading: false,
+  error: null,
 
-  // Add this method for debugging
-  clearAllData: async () => {
+  register: async (data: RegisterData) => {
+    set({ isLoading: true, error: null });
+
     try {
-      await AsyncStorage.clear();
-      await secureStorage.clear();
+      console.log("🔄 Registering user:", data.email);
+
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      const existingUsers =
+        (await storage.getObject<User[]>("all_users")) || [];
+      const userExists = existingUsers.find(
+        (u) => u.email.toLowerCase() === data.email.toLowerCase()
+      );
+
+      if (userExists) {
+        throw new Error("An account with this email already exists");
+      }
+
+      const newUser: User = {
+        id: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email.toLowerCase(),
+        createdAt: new Date(),
+        isNewUser: true,
+      };
+
+      // Save user to all_users but DON'T log them in yet
+      const allUsers = [...existingUsers, newUser];
+      await storage.setObject("all_users", allUsers);
+
+      set({ isLoading: false });
+      console.log("✅ User registered successfully:", newUser.email);
+      return true;
+    } catch (error) {
+      console.error("❌ Registration error:", error);
       set({
-        user: null,
-        isAuthenticated: false,
+        error: error instanceof Error ? error.message : "Registration failed",
         isLoading: false,
       });
-      console.log("All data cleared successfully");
-    } catch (error) {
-      console.error("Error clearing all ", error);
-    }
-  },
-
-  initialize: async () => {
-    try {
-      const userId = await AsyncStorage.getItem(STORAGE_KEYS.CURRENT_USER_ID);
-
-      // Only try to get token if we have a valid userId
-      let token = null;
-      if (userId) {
-        token = await secureStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
-      }
-
-      if (userId && token) {
-        const user = await asyncDB.findUserById(userId);
-
-        if (user) {
-          set({
-            user,
-            isAuthenticated: true,
-            isLoading: false,
-          });
-          return;
-        }
-      }
-
-      set({ isLoading: false });
-    } catch (error) {
-      console.error("Auth initialization error:", error);
-      set({ isLoading: false });
+      return false;
     }
   },
 
   signIn: async (email: string, password: string) => {
+    set({ isLoading: true, error: null });
+
     try {
-      const user = await asyncDB.findUserByEmail(email);
+      console.log("🔑 Signing in user:", email);
+
+      await new Promise((resolve) => setTimeout(resolve, 800));
+
+      const allUsers = (await storage.getObject<User[]>("all_users")) || [];
+      const user = allUsers.find(
+        (u) => u.email.toLowerCase() === email.toLowerCase()
+      );
 
       if (!user) {
-        throw new Error("User not found. Please register first.");
+        throw new Error("No account found with this email address");
       }
 
-      // Generate auth token
-      const token = await Crypto.digestStringAsync(
-        Crypto.CryptoDigestAlgorithm.SHA256,
-        `${email}${Date.now()}`
-      );
-
-      // Store auth data
-      await AsyncStorage.setItem(STORAGE_KEYS.CURRENT_USER_ID, user.id);
-      await secureStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, token);
+      // Save user session
+      await storage.setObject(STORAGE_KEYS.USER, user);
+      await storage.setItem(STORAGE_KEYS.AUTH_TOKEN, `token_${user.id}`);
 
       set({
         user,
         isAuthenticated: true,
+        isLoading: false,
       });
-    } catch (error) {
-      console.error("Sign in error:", error);
-      throw new Error(
-        error instanceof Error ? error.message : "Sign in failed"
+
+      console.log(
+        "✅ User signed in:",
+        user.firstName,
+        "| New user:",
+        !!user.isNewUser
       );
+      return true;
+    } catch (error) {
+      console.error("❌ Sign in error:", error);
+      set({
+        error:
+          error instanceof Error ? error.message : "Invalid email or password",
+        isLoading: false,
+      });
+      return false;
     }
   },
 
-  signUp: async (
-    email: string,
-    password: string,
-    userData: { firstName: string; lastName: string }
-  ) => {
+  markUserAsExisting: async () => {
+    const { user } = get();
+    if (user && user.isNewUser) {
+      const updatedUser = { ...user, isNewUser: false };
+
+      set({ user: updatedUser });
+      await storage.setObject(STORAGE_KEYS.USER, updatedUser);
+
+      const allUsers = (await storage.getObject<User[]>("all_users")) || [];
+      const updatedUsers = allUsers.map((u) =>
+        u.id === user.id ? updatedUser : u
+      );
+      await storage.setObject("all_users", updatedUsers);
+
+      console.log("✅ User marked as existing:", updatedUser.email);
+    }
+  },
+
+  logout: async () => {
+    console.log("🔄 Logging out...");
+
+    // Only clear auth session, NOT user data
+    await storage.removeItem(STORAGE_KEYS.USER);
+    await storage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
+
+    set({
+      user: null,
+      isAuthenticated: false,
+      error: null,
+    });
+
+    console.log("✅ Logged out successfully (user data preserved)");
+  },
+
+  initialize: async () => {
+    set({ isLoading: true });
+
     try {
-      // Check if user exists
-      const existingUser = await asyncDB.findUserByEmail(email);
-      if (existingUser) {
-        throw new Error(
-          `User with email ${email} already exists. Please sign in instead.`
+      const user = await storage.getObject<User>(STORAGE_KEYS.USER);
+      const token = await storage.getItem(STORAGE_KEYS.AUTH_TOKEN);
+
+      if (user && token) {
+        set({
+          user,
+          isAuthenticated: true,
+          isLoading: false,
+        });
+        console.log(
+          "✅ Session restored:",
+          user.firstName,
+          "| New user:",
+          !!user.isNewUser
         );
-      }
-
-      // Create user
-      const user = await asyncDB.createUser({
-        email: email.toLowerCase().trim(),
-        firstName: userData.firstName.trim(),
-        lastName: userData.lastName.trim(),
-        isVerified: false,
-      });
-
-      // Generate auth token
-      const token = await Crypto.digestStringAsync(
-        Crypto.CryptoDigestAlgorithm.SHA256,
-        `${email}${Date.now()}`
-      );
-
-      // Store auth data
-      await AsyncStorage.setItem(STORAGE_KEYS.CURRENT_USER_ID, user.id);
-      await secureStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, token);
-
-      set({
-        user,
-        isAuthenticated: true,
-      });
-    } catch (error) {
-      console.error("Sign up error:", error);
-      throw new Error(
-        error instanceof Error ? error.message : "Sign up failed"
-      );
-    }
-  },
-
-  signOut: async () => {
-    try {
-      await AsyncStorage.removeItem(STORAGE_KEYS.CURRENT_USER_ID);
-      await secureStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
-
-      set({
-        user: null,
-        isAuthenticated: false,
-      });
-    } catch (error) {
-      console.error("Sign out error:", error);
-    }
-  },
-
-  updateProfile: async (userData: Partial<User>) => {
-    try {
-      const currentUser = get().user;
-      if (!currentUser) return;
-
-      const updatedUser = await asyncDB.updateUser(currentUser.id, userData);
-
-      if (updatedUser) {
-        set({ user: updatedUser });
+      } else {
+        set({
+          isLoading: false,
+        });
+        console.log("ℹ️ No existing session found");
       }
     } catch (error) {
-      console.error("Profile update error:", error);
-      throw new Error("Profile update failed");
+      console.error("Auth initialization error:", error);
+      await storage.removeItem(STORAGE_KEYS.USER);
+      await storage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
+      set({ isLoading: false });
     }
   },
+
+  clearError: () => set({ error: null }),
 }));

@@ -146,7 +146,7 @@ export const useNewsStore = create<NewsState>((set, get) => ({
 }));
 
 // Auto-refresh functionality
-let newsRefreshInterval: NodeJS.Timeout | null = null;
+let newsRefreshInterval: ReturnType<typeof setInterval> | null = null;
 
 export const startNewsAutoRefresh = (intervalMinutes: number = 15) => {
   if (newsRefreshInterval) {
