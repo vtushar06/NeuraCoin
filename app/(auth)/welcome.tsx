@@ -5,12 +5,16 @@ import {
   StyleSheet,
   ImageBackground,
   Pressable,
-  Image, // Add this import
+  Image,
+  Dimensions,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
 import { Colors } from "@/constants/Colors";
+
+const { width } = Dimensions.get("window");
 
 export default function WelcomeScreen() {
   return (
@@ -21,29 +25,74 @@ export default function WelcomeScreen() {
       style={styles.container}
     >
       <LinearGradient
-        colors={["rgba(26, 26, 46, 0.8)", "rgba(0, 0, 0, 0.9)"]}
+        colors={["rgba(26, 26, 46, 0.85)", "rgba(0, 0, 0, 0.9)"]}
         style={styles.overlay}
       >
         <SafeAreaView style={styles.content}>
           <View style={styles.header}>
-            {/* Add Logo */}
+            {/* App Logo */}
             <View style={styles.logoContainer}>
-              <Image
-                source={require("@/assets/images/logo-icon-1.png")}
-                style={styles.headerLogo}
-                resizeMode="contain"
-              />
+              <View style={styles.logoBackground}>
+                <Image
+                  source={require("@/assets/images/logo-icon-1.png")}
+                  style={styles.logo}
+                  resizeMode="contain"
+                />
+              </View>
             </View>
+
             <Text style={styles.title}>NeuraCoin</Text>
             <Text style={styles.subtitle}>
-              Your Gateway to the Future of Finance
+              Master Crypto Trading with Virtual Money
+            </Text>
+            <Text style={styles.description}>
+              Learn, practice, and master cryptocurrency trading in a risk-free
+              environment with real market data.
             </Text>
           </View>
 
           <View style={styles.features}>
-            <FeatureItem icon="💰" text="Trade cryptocurrencies securely" />
-            <FeatureItem icon="📈" text="Real-time market analytics" />
-            <FeatureItem icon="🔒" text="Bank-level security" />
+            <Text style={styles.featuresTitle}>Why Choose NeuraCoin?</Text>
+
+            <FeatureItem
+              icon="shield-checkmark"
+              text="100% Risk-Free Learning"
+              color={Colors.success}
+            />
+            <FeatureItem
+              icon="trending-up"
+              text="Real Market Data & Charts"
+              color={Colors.primary}
+            />
+            <FeatureItem
+              icon="wallet"
+              text="Virtual NeuraCoins & Portfolio"
+              color={Colors.warning}
+            />
+            <FeatureItem
+              icon="school"
+              text="Educational Trading Resources"
+              color={Colors.info}
+            />
+            <FeatureItem
+              icon="gift"
+              text="Daily Rewards & Bonuses"
+              color={Colors.secondary}
+            />
+          </View>
+
+          {/* Welcome Bonus Banner */}
+          <View style={styles.bonusBanner}>
+            <View style={styles.bonusContent}>
+              <Text style={styles.bonusTitle}>🎁 Sign Up Bonus</Text>
+              <Text style={styles.bonusText}>
+                Get 1,000 NeuraCoins + Free Bitcoin worth 10,000 NC
+              </Text>
+            </View>
+            <View style={styles.bonusAmount}>
+              <Text style={styles.bonusValue}>11,000</Text>
+              <Text style={styles.bonusUnit}>NC Value</Text>
+            </View>
           </View>
 
           <View style={styles.buttons}>
@@ -51,15 +100,30 @@ export default function WelcomeScreen() {
               style={[styles.button, styles.primaryButton]}
               onPress={() => router.push("/register")}
             >
-              <Text style={styles.primaryButtonText}>Get Started</Text>
+              <Ionicons name="person-add" size={20} color={Colors.background} />
+              <Text style={styles.primaryButtonText}>Create Free Account</Text>
             </Pressable>
 
             <Pressable
               style={[styles.button, styles.secondaryButton]}
               onPress={() => router.push("/login")}
             >
+              <Ionicons name="log-in" size={20} color={Colors.primary} />
               <Text style={styles.secondaryButtonText}>Sign In</Text>
             </Pressable>
+
+            <Pressable style={styles.demoButton}>
+              <Text style={styles.demoButtonText}>
+                👀 View Demo Trading Interface
+              </Text>
+            </Pressable>
+          </View>
+
+          {/* Footer */}
+          <View style={styles.footer}>
+            <Text style={styles.footerText}>
+              Join 10,000+ users learning crypto trading safely
+            </Text>
           </View>
         </SafeAreaView>
       </LinearGradient>
@@ -67,10 +131,22 @@ export default function WelcomeScreen() {
   );
 }
 
-function FeatureItem({ icon, text }: { icon: string; text: string }) {
+function FeatureItem({
+  icon,
+  text,
+  color,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  text: string;
+  color: string;
+}) {
   return (
     <View style={styles.feature}>
-      <Text style={styles.featureIcon}>{icon}</Text>
+      <View
+        style={[styles.featureIconContainer, { backgroundColor: color + "20" }]}
+      >
+        <Ionicons name={icon} size={20} color={color} />
+      </View>
       <Text style={styles.featureText}>{text}</Text>
     </View>
   );
@@ -90,63 +166,132 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: "center",
-    marginTop: 60,
+    marginTop: 15,
   },
-  // Add logo styles
   logoContainer: {
-    width: 156,
-    height: 156,
-    backgroundColor: "transparent", // Force transparent background
-    borderRadius: 32, // Circular container
-    overflow: "hidden", // Clip any background artifacts
+    marginBottom: 20,
+  },
+  logoBackground: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
     justifyContent: "center",
     alignItems: "center",
+    borderWidth: 2,
+    borderColor: "rgba(255, 255, 255, 0.2)",
   },
-  headerLogo: {
-    width: "100%",
-    height: "100%",
-    backgroundColor: "transparent",
+  logo: {
+    width: 128,
+    height: 128,
   },
   title: {
-    fontSize: 48,
+    fontSize: 42,
     fontWeight: "bold",
     color: Colors.primary,
     marginBottom: 8,
+    textAlign: "center",
   },
   subtitle: {
-    fontSize: 18,
+    fontSize: 20,
+    color: Colors.text,
+    textAlign: "center",
+    fontWeight: "600",
+    marginBottom: 12,
+  },
+  description: {
+    fontSize: 16,
     color: Colors.textSecondary,
     textAlign: "center",
-    marginHorizontal: 20,
+    lineHeight: 22,
+    paddingHorizontal: 10,
   },
   features: {
-    gap: 24,
+    marginTop: 20,
+  },
+  featuresTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: Colors.text,
+    marginBottom: 20,
+    textAlign: "center",
   },
   feature: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 16,
+    marginBottom: 16,
+    paddingHorizontal: 8,
   },
-  featureIcon: {
-    fontSize: 24,
+  featureIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 16,
   },
   featureText: {
     fontSize: 16,
     color: Colors.text,
     flex: 1,
+    lineHeight: 22,
+  },
+  bonusBanner: {
+    flexDirection: "row",
+    backgroundColor: Colors.primary + "20",
+    borderRadius: 12,
+    padding: 16,
+    marginVertical: 20,
+    borderWidth: 1,
+    borderColor: Colors.primary + "40",
+    alignItems: "center",
+  },
+  bonusContent: {
+    flex: 1,
+  },
+  bonusTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: Colors.text,
+    marginBottom: 4,
+  },
+  bonusText: {
+    fontSize: 13,
+    color: Colors.textSecondary,
+    lineHeight: 18,
+  },
+  bonusAmount: {
+    alignItems: "center",
+    paddingLeft: 16,
+  },
+  bonusValue: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: Colors.primary,
+  },
+  bonusUnit: {
+    fontSize: 12,
+    color: Colors.textSecondary,
   },
   buttons: {
     gap: 16,
-    marginBottom: 40,
+    marginBottom: 20,
   },
   button: {
     height: 56,
     borderRadius: 12,
     justifyContent: "center",
     alignItems: "center",
+    flexDirection: "row",
+    gap: 8,
   },
   primaryButton: {
     backgroundColor: Colors.primary,
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
   secondaryButton: {
     backgroundColor: "transparent",
@@ -162,5 +307,22 @@ const styles = StyleSheet.create({
     color: Colors.primary,
     fontSize: 18,
     fontWeight: "600",
+  },
+  demoButton: {
+    alignItems: "center",
+    paddingVertical: 12,
+  },
+  demoButtonText: {
+    color: Colors.textSecondary,
+    fontSize: 14,
+    textDecorationLine: "underline",
+  },
+  footer: {
+    alignItems: "center",
+  },
+  footerText: {
+    fontSize: 12,
+    color: Colors.textSecondary,
+    textAlign: "center",
   },
 });
