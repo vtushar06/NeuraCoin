@@ -34,7 +34,6 @@ export default function HomeScreen() {
     fetchTopCryptos,
     isLoading: cryptoLoading,
     error,
-    lastUpdated,
     clearError,
   } = useCryptoStore();
 
@@ -129,11 +128,6 @@ export default function HomeScreen() {
                 color={Colors.text}
               />
             </Pressable>
-            {lastUpdated && (
-              <Text style={styles.lastUpdate}>
-                Updated: {lastUpdated.toLocaleTimeString()}
-              </Text>
-            )}
           </View>
         </View>
 
@@ -312,45 +306,6 @@ export default function HomeScreen() {
           )}
         </View>
 
-        {/* Recent Activity - Only show when wallet is loaded */}
-        {wallet && !walletLoading && (
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Recent Activity</Text>
-              <Pressable onPress={() => router.push("/(tabs)/transactions")}>
-                <Text style={styles.viewAll}>View All</Text>
-              </Pressable>
-            </View>
-
-            <View style={styles.activityList}>
-              <ActivityItem
-                type="buy"
-                crypto="BTC"
-                amount="0.025"
-                value={1250.5}
-                time="2 hours ago"
-                isVirtual={true}
-              />
-              <ActivityItem
-                type="sell"
-                crypto="ETH"
-                amount="1.5"
-                value={2880.75}
-                time="1 day ago"
-                isVirtual={true}
-              />
-              <ActivityItem
-                type="reward"
-                crypto="NC"
-                amount="100"
-                value={100}
-                time="Today"
-                isVirtual={false}
-              />
-            </View>
-          </View>
-        )}
-
         {/* Educational Banner */}
         <View style={styles.educationalBanner}>
           <View style={styles.educationalContent}>
@@ -369,82 +324,6 @@ export default function HomeScreen() {
         </View>
       </ScrollView>
     </SafeAreaView>
-  );
-}
-
-// Activity item component (same as before)
-function ActivityItem({
-  type,
-  crypto,
-  amount,
-  value,
-  time,
-  isVirtual = true,
-}: {
-  type: "buy" | "sell" | "reward";
-  crypto: string;
-  amount: string;
-  value: number;
-  time: string;
-  isVirtual?: boolean;
-}) {
-  const getActivityIcon = () => {
-    switch (type) {
-      case "buy":
-        return { name: "arrow-down", color: Colors.success };
-      case "sell":
-        return { name: "arrow-up", color: Colors.error };
-      case "reward":
-        return { name: "gift", color: Colors.warning };
-      default:
-        return { name: "swap-horizontal", color: Colors.primary };
-    }
-  };
-
-  const getActivityTitle = () => {
-    switch (type) {
-      case "buy":
-        return `Bought ${crypto}`;
-      case "sell":
-        return `Sold ${crypto}`;
-      case "reward":
-        return `Earned ${crypto}`;
-      default:
-        return `${type} ${crypto}`;
-    }
-  };
-
-  const icon = getActivityIcon();
-
-  return (
-    <View style={styles.activityItem}>
-      <View
-        style={[styles.activityIcon, { backgroundColor: icon.color + "20" }]}
-      >
-        <Ionicons name={icon.name as any} size={16} color={icon.color} />
-      </View>
-      <View style={styles.activityInfo}>
-        <View style={styles.activityTitleRow}>
-          <Text style={styles.activityCrypto}>{getActivityTitle()}</Text>
-          {isVirtual && (
-            <View style={styles.virtualBadge}>
-              <Text style={styles.virtualBadgeText}>VIRTUAL</Text>
-            </View>
-          )}
-        </View>
-        <Text style={styles.activityTime}>{time}</Text>
-      </View>
-      <View style={styles.activityAmount}>
-        <Text style={styles.activityValue}>
-          {isVirtual && type !== "reward"
-            ? formatCurrency(value)
-            : `${value} ${crypto}`}
-        </Text>
-        <Text style={styles.activityQuantity}>
-          {amount} {crypto}
-        </Text>
-      </View>
-    </View>
   );
 }
 
@@ -635,68 +514,6 @@ const styles = StyleSheet.create({
   },
   cryptoList: {
     gap: 12,
-  },
-  activityList: {
-    gap: 16,
-  },
-  activityItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 16,
-    backgroundColor: Colors.card,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  activityIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 12,
-  },
-  activityInfo: {
-    flex: 1,
-  },
-  activityTitleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  activityCrypto: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: Colors.text,
-  },
-  virtualBadge: {
-    backgroundColor: Colors.primary + "20",
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 8,
-  },
-  virtualBadgeText: {
-    fontSize: 8,
-    color: Colors.primary,
-    fontWeight: "600",
-  },
-  activityTime: {
-    fontSize: 12,
-    color: Colors.textSecondary,
-    marginTop: 2,
-  },
-  activityAmount: {
-    alignItems: "flex-end",
-  },
-  activityValue: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: Colors.text,
-  },
-  activityQuantity: {
-    fontSize: 12,
-    color: Colors.textSecondary,
-    marginTop: 2,
   },
   educationalBanner: {
     backgroundColor: Colors.card,

@@ -7,6 +7,7 @@ import {
   Pressable,
   Image,
   Dimensions,
+  ScrollView,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
@@ -28,7 +29,11 @@ export default function WelcomeScreen() {
         colors={["rgba(26, 26, 46, 0.85)", "rgba(0, 0, 0, 0.9)"]}
         style={styles.overlay}
       >
-        <SafeAreaView style={styles.content}>
+        <SafeAreaView style={styles.safeArea}>
+          <ScrollView 
+            contentContainerStyle={styles.content}
+            showsVerticalScrollIndicator={false}
+          >
           <View style={styles.header}>
             {/* App Logo */}
             <View style={styles.logoContainer}>
@@ -125,6 +130,7 @@ export default function WelcomeScreen() {
               Join 10,000+ users learning crypto trading safely
             </Text>
           </View>
+          </ScrollView>
         </SafeAreaView>
       </LinearGradient>
     </ImageBackground>
@@ -159,10 +165,13 @@ const styles = StyleSheet.create({
   overlay: {
     flex: 1,
   },
-  content: {
+  safeArea: {
     flex: 1,
-    justifyContent: "space-between",
+  },
+  content: {
+    flexGrow: 1,
     padding: 24,
+    paddingBottom: 40,
   },
   header: {
     alignItems: "center",
@@ -207,7 +216,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   features: {
-    marginTop: 20,
+    marginTop: 24,
+    marginBottom: 8,
   },
   featuresTitle: {
     fontSize: 18,
@@ -275,7 +285,8 @@ const styles = StyleSheet.create({
   },
   buttons: {
     gap: 16,
-    marginBottom: 20,
+    marginTop: 16,
+    marginBottom: 16,
   },
   button: {
     height: 56,
@@ -319,6 +330,8 @@ const styles = StyleSheet.create({
   },
   footer: {
     alignItems: "center",
+    paddingTop: 8,
+    paddingBottom: 8,
   },
   footerText: {
     fontSize: 12,
