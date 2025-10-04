@@ -124,16 +124,6 @@ export default function QuickActions() {
       onPress: () => router.push("/(tabs)/news"),
     },
     {
-      icon: "school",
-      title: "Learn Trading",
-      subtitle: "Educational resources",
-      color: Colors.secondary,
-      onPress: () => {
-        // TODO: Navigate to learning section
-        console.log("Navigate to learning section");
-      },
-    },
-    {
       icon: "gift",
       title: "Daily Rewards",
       subtitle: "Claim free NeuraCoins",

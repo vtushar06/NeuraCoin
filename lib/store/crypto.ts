@@ -90,14 +90,18 @@ export const useCryptoStore = create<CryptoState>((set, get) => ({
         `Successfully fetched ${enhancedData.length} cryptocurrencies`
       );
     } catch (error) {
-      console.error("Error fetching top cryptos:", error);
-      set({
-        error:
-          error instanceof Error
-            ? error.message
-            : "Failed to fetch market data",
-        isLoading: false,
-      });
+      console.warn("⚠️ API temporarily unavailable, using cached/fallback data");
+      
+      // Don't set error state if we already have data (fallback is working)
+      const currentData = get().topCryptos;
+      if (currentData.length === 0) {
+        set({
+          error: "Using demo data - API temporarily unavailable",
+          isLoading: false,
+        });
+      } else {
+        set({ isLoading: false });
+      }
     }
   },
 
@@ -174,7 +178,7 @@ export const useCryptoStore = create<CryptoState>((set, get) => ({
 }));
 
 // Auto-refresh functionality
-let refreshInterval: NodeJS.Timeout | null = null;
+let refreshInterval: ReturnType<typeof setInterval> | null = null;
 
 export const startAutoRefresh = (intervalMinutes: number = 5) => {
   if (refreshInterval) {

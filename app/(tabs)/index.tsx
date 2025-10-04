@@ -291,7 +291,7 @@ export default function HomeScreen() {
             </View>
           ) : (
             <View style={styles.cryptoList}>
-              {topCryptos.slice(0, 10).map((crypto, index) => (
+              {topCryptos.slice(0, 5).map((crypto, index) => (
                 <CryptoCard
                   key={crypto.id}
                   crypto={crypto}

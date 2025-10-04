@@ -74,30 +74,6 @@ export default function WelcomeScreen() {
               text="Virtual NeuraCoins & Portfolio"
               color={Colors.warning}
             />
-            <FeatureItem
-              icon="school"
-              text="Educational Trading Resources"
-              color={Colors.info}
-            />
-            <FeatureItem
-              icon="gift"
-              text="Daily Rewards & Bonuses"
-              color={Colors.secondary}
-            />
-          </View>
-
-          {/* Welcome Bonus Banner */}
-          <View style={styles.bonusBanner}>
-            <View style={styles.bonusContent}>
-              <Text style={styles.bonusTitle}>🎁 Sign Up Bonus</Text>
-              <Text style={styles.bonusText}>
-                Get 1,000 NeuraCoins + Free Bitcoin worth 10,000 NC
-              </Text>
-            </View>
-            <View style={styles.bonusAmount}>
-              <Text style={styles.bonusValue}>11,000</Text>
-              <Text style={styles.bonusUnit}>NC Value</Text>
-            </View>
           </View>
 
           <View style={styles.buttons}>
@@ -122,6 +98,20 @@ export default function WelcomeScreen() {
                 👀 View Demo Trading Interface
               </Text>
             </Pressable>
+          </View>
+
+          {/* Welcome Bonus Banner */}
+          <View style={styles.bonusBanner}>
+            <View style={styles.bonusContent}>
+              <Text style={styles.bonusTitle}>🎁 Sign Up Bonus</Text>
+              <Text style={styles.bonusText}>
+                Get 1,000 NeuraCoins + Free Bitcoin worth 10,000 NC
+              </Text>
+            </View>
+            <View style={styles.bonusAmount}>
+              <Text style={styles.bonusValue}>11,000</Text>
+              <Text style={styles.bonusUnit}>NC Value</Text>
+            </View>
           </View>
 
           {/* Footer */}
@@ -175,10 +165,10 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: "center",
-    marginTop: 15,
+    marginTop: 8,
   },
   logoContainer: {
-    marginBottom: 20,
+    marginBottom: 12,
   },
   logoBackground: {
     width: 100,
@@ -216,20 +206,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   features: {
-    marginTop: 24,
+    marginTop: 20,
     marginBottom: 8,
   },
   featuresTitle: {
     fontSize: 18,
     fontWeight: "bold",
     color: Colors.text,
-    marginBottom: 20,
+    marginBottom: 16,
     textAlign: "center",
   },
   feature: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 16,
+    marginBottom: 14,
     paddingHorizontal: 8,
   },
   featureIconContainer: {
@@ -251,7 +241,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary + "20",
     borderRadius: 12,
     padding: 16,
-    marginVertical: 20,
+    marginTop: 16,
+    marginBottom: 12,
     borderWidth: 1,
     borderColor: Colors.primary + "40",
     alignItems: "center",

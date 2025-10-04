@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import { router } from "expo-router";
 import { Colors, Gradients } from "@/constants/Colors";
 import type { VirtualWallet } from "@/lib/types/wallet";
 
@@ -88,7 +89,10 @@ export default function WalletSummaryCard({
         {/* Action Buttons */}
         {showActions && (
           <View style={styles.actionsContainer}>
-            <Pressable style={styles.actionButton}>
+            <Pressable 
+              style={styles.actionButton}
+              onPress={() => router.push("/(tabs)/market")}
+            >
               <Ionicons
                 name="add-circle-outline"
                 size={18}
